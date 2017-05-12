@@ -31,7 +31,7 @@ public class Board {
      * Create a new game board.
      */
     public Board() {
-        board = new Piece[COLUMNS][ROWS];
+        board = new Piece[ROWS][COLUMNS];
         size = new int[COLUMNS];
         totalSize = 0;
         lastMove = -1;
@@ -47,8 +47,8 @@ public class Board {
      */
     public boolean move(int column, Piece piece) {
         if (isValidMove(column)) {
-            int row = size[column];
-            board[column][row] = piece;
+            int row = Board.ROWS - 1 - size[column];
+            board[row][column] = piece;
             lastMove = column;
             ++size[column];
             ++totalSize;
@@ -76,8 +76,8 @@ public class Board {
 
         //if the last move is a winning move, the game is over
         int col = lastMove;
-        int row = size[col] - 1;
-        Piece piece = board[col][row];
+        int row = Board.ROWS - size[col];
+        Piece piece = board[row][col];
         return isWinningMove(col, piece);
     }
 
@@ -91,34 +91,32 @@ public class Board {
     private boolean isWinningMove(int col, Piece piece) {
         int low;
         int high;
-        int row = size[col] - 1;
+        int row = Board.ROWS - size[col];
         //Check diagonal (bottom-left to top-right)
-        for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && board[col - low - 1][row - low - 1] == piece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && board[col + high + 1][row + high + 1] == piece; ++high);
+        for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && board[row - low - 1][col - low - 1] == piece; ++low);
+        for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && board[row + high + 1][col + high + 1] == piece; ++high);
         if (Math.abs(high - low) + 1 >= REQUIRED) {
             return true;
         }
 
         //Check diagonal (top-left to bottom-right)
-        for (low = 0; col - low - 1 >= 0 && row + low + 1 < ROWS && board[col - low - 1][row + low + 1] == piece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row - high - 1 >= 0 && board[col + high + 1][row - high - 1] == piece; ++high);
+        for (low = 0; col - low - 1 >= 0 && row + low + 1 < ROWS && board[row + low + 1][col - low - 1] == piece; ++low);
+        for (high = 0; col + high + 1 < COLUMNS && row - high - 1 >= 0 && board[row - high - 1][col + high + 1] == piece; ++high);
         if (Math.abs(high - low) + 1 >= REQUIRED) {
             return true;
         }
 
         //Check horizontal direction
-        for (low = col; low > 0 && board[low - 1][row] == piece; --low);
-        for (high = col; high < COLUMNS - 1 && board[high + 1][row] == piece; ++high);
+        for (low = col; low > 0 && board[row][low - 1] == piece; --low);
+        for (high = col; high < COLUMNS - 1 && board[row][high + 1] == piece; ++high);
         if (Math.abs(high - low) + 1 >= REQUIRED) {
             return true;
         }
 
         //Check vertical direction        
-        row = size[col] - 1;
-        for (int i = row; i >= 0 && board[col][i] == piece; --i) {
-            if (row - i + 1 == REQUIRED) {
-                return true;
-            }
+        for (high = row; high < ROWS - 1 && board[high + 1 ][col] == piece; ++high);
+        if (Math.abs(high - row) + 1 >= REQUIRED) {
+            return true;
         }
         return false;
     }
@@ -129,7 +127,7 @@ public class Board {
      * @return true if the game is a draw and false otherwise
      */
     public boolean isDraw() {
-        return isBoardFilled() && !isWinningMove(lastMove, board[lastMove][size[lastMove] - 1]);
+        return isBoardFilled() && !isWinningMove(lastMove, board[Board.ROWS - size[lastMove]][lastMove]);
     }
 
     //Check if the board is completely filled

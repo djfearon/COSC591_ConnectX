@@ -62,7 +62,7 @@ public class BoardTest {
         result = board.isGameOver();
         assertTrue(result);
 
-        //Test it bhorizontal case
+        //Test horizontal case
         board = new Board();
         for (int i = 0; i < Board.REQUIRED - 1; ++i) {
             board.move(i, Piece.RED);
