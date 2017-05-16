@@ -16,9 +16,15 @@ public enum Piece {
     /**
      * A red piece
      */
-    RED,
+    RED("R"),
     /**
      * A black piece
      */
-    BLACK;
+    BLACK("B");
+    
+    public final String color;
+    
+    Piece(String color) {
+        this.color = color;
+    }
 }

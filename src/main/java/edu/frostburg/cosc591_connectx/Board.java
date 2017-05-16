@@ -114,7 +114,7 @@ public class Board {
         }
 
         //Check vertical direction        
-        for (high = row; high < ROWS - 1 && board[high + 1 ][col] == piece; ++high);
+        for (high = row; high < ROWS - 1 && board[high + 1][col] == piece; ++high);
         if (Math.abs(high - row) + 1 >= REQUIRED) {
             return true;
         }
@@ -138,5 +138,35 @@ public class Board {
     //Checks if the move is valid
     private boolean isValidMove(int col) {
         return col >= 0 && col < Board.COLUMNS && size[col] < Board.ROWS;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        //Add the top edge of the board
+        for (int i = 0; i < COLUMNS * 2; ++i) {
+            if (i % 2 == 0) {
+                builder.append(" ");
+            } else {
+                builder.append("_");
+
+            }
+        }
+        builder.append("\r\n");
+
+        //Add the rest of the board
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMNS; j++) {
+                builder.append('|');
+                Piece piece = board[i][j];
+                if (piece != null) {
+                    builder.append(piece.color);
+                } else {
+                    builder.append("_");
+                }
+            }
+            builder.append("|\r\n");
+        }
+        return builder.toString();
     }
 }
