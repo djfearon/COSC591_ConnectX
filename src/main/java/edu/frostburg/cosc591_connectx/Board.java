@@ -11,17 +11,17 @@ public class Board {
     /**
      * The number of columns in the board
      */
-    public static final int COLUMNS = 7;
+    public static int COLUMNS;
 
     /**
      * The number of rows in the board
      */
-    public static final int ROWS = 6;
+    public static int ROWS;
 
     /**
      * The number of pieces in a row required to win the game
      */
-    public static final int REQUIRED = 4;
+    public static int REQUIRED;
     private Piece[][] board;
     private int[] size;
     private int totalSize;
@@ -30,7 +30,12 @@ public class Board {
     /**
      * Create a new game board.
      */
-    public Board() {
+    public Board(int x) {
+        
+        REQUIRED = x;//Set the number of required pieces in a row
+        ROWS = x + 2;//Set the number of rows
+        COLUMNS = x + 3;//Set the number of columns
+                
         board = new Piece[ROWS][COLUMNS];
         size = new int[COLUMNS];
         totalSize = 0;
@@ -136,7 +141,7 @@ public class Board {
     }
 
     //Checks if the move is valid
-    private boolean isValidMove(int col) {
+    public boolean isValidMove(int col) {
         return col >= 0 && col < Board.COLUMNS && size[col] < Board.ROWS;
     }
 
