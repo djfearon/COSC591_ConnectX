@@ -155,6 +155,9 @@ public class Board {
 
     //Checks if the move is valid
     public boolean isValidMove(int col) {
+//        if(size[col] == Board.ROWS){
+//            System.out.printf("col: %d, size[col]: %d, bool: %b\n", col, size[col], size[col] < Board.ROWS);
+//        }
         return col >= 0 && col < Board.COLUMNS && size[col] < Board.ROWS;
     }
 
@@ -196,5 +199,13 @@ public class Board {
         board[row][column] = null;
         --size[column];
         --totalSize;
+    }
+    
+    public void setSize(int[] size){
+        this.size = size;
+    }
+    
+    public int[] getSize(){
+        return this.size;
     }
 }

@@ -32,7 +32,9 @@ public class ConnectFour {
             } else {
                 int aiMove = -1;
                 while (aiMove == -1) {
-                    aiMove = ai.getMove(boardCopy(board), 0);
+                    Board copy = boardCopy(board);
+                    copy.setSize(board.getSize());
+                    aiMove = ai.getMove(copy, 0);
                 }
                 board.move(aiMove, Piece.RED, false);
             }
