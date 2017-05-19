@@ -10,7 +10,7 @@ public class ConnectFour {
     public static void main(String[] args) {
         Scanner s = new Scanner(System.in);
         Random r = new Random(System.currentTimeMillis());
-        Piece palyerColor = null;
+        Piece playerColor = null;
         Piece aiColor = null;
 
         System.out.println("Welcome to Connect X!");
@@ -24,14 +24,16 @@ public class ConnectFour {
         //Set the piece color for the player and the AI
         int turn = r.nextInt(2);
         if (turn == 0) {
-            palyerColor = Piece.RED;
+            playerColor = Piece.RED;
             aiColor = Piece.BLACK;
         } else {
-            palyerColor = Piece.BLACK;
+            playerColor = Piece.BLACK;
             aiColor = Piece.RED;
         }
 
-        AIPlayer ai = new AIPlayer(5, aiColor);
+        System.out.println("Your piece color is " + playerColor.color);
+
+        AIPlayer ai = new AIPlayer(10, aiColor);
 
         Board board = new Board(x);
         boolean gameOver = false;
@@ -46,8 +48,8 @@ public class ConnectFour {
                 while (!board.isValidMove(move)) {
                     System.out.print("Enter a column: ");
                     move = s.nextInt();
-                    board.move(move, palyerColor, false);
                 }
+                board.move(move, playerColor, false);
             } else {
                 int aiMove = -1;
                 while (aiMove == -1) {
