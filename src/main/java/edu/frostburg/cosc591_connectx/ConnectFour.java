@@ -1,5 +1,6 @@
 package edu.frostburg.cosc591_connectx;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class ConnectFour {
@@ -8,27 +9,45 @@ public class ConnectFour {
 
     public static void main(String[] args) {
         Scanner s = new Scanner(System.in);
+        Random r = new Random(System.currentTimeMillis());
+        Piece palyerColor = null;
+        Piece aiColor = null;
+
         System.out.println("Welcome to Connect X!");
         x = 0;
+        //Do not allow games of Connect 0, 1, or 2.
         while (x < 3) {
             System.out.print("Please enter how many pieces you would like to connect: ");
             x = s.nextInt();
         }
 
-        AIPlayer ai = new AIPlayer(10, Piece.RED);
+        //Set the piece color for the player and the AI
+        int turn = r.nextInt(2);
+        if (turn == 0) {
+            palyerColor = Piece.RED;
+            aiColor = Piece.BLACK;
+        } else {
+            palyerColor = Piece.BLACK;
+            aiColor = Piece.RED;
+        }
+
+        AIPlayer ai = new AIPlayer(5, aiColor);
 
         Board board = new Board(x);
         boolean gameOver = false;
         boolean draw = false;
         boolean humanTurn = true;
-        
+
         System.out.println(board);
 
         do {
             if (humanTurn) {
-                System.out.print("Enter a column: ");
-                int move = s.nextInt();
-                board.move(move, Piece.BLACK, false);
+                int move = -1;
+                while (!board.isValidMove(move)) {
+                    System.out.print("Enter a column: ");
+                    move = s.nextInt();
+                    board.move(move, palyerColor, false);
+                }
             } else {
                 int aiMove = -1;
                 while (aiMove == -1) {
@@ -36,7 +55,7 @@ public class ConnectFour {
                     copy.setSize(board.getSize());
                     aiMove = ai.getMove(copy, 0);
                 }
-                board.move(aiMove, Piece.RED, false);
+                board.move(aiMove, aiColor, false);
             }
 
             gameOver = board.isGameOver();
@@ -44,14 +63,14 @@ public class ConnectFour {
             humanTurn = !humanTurn;
             System.out.println(board);
         } while (!gameOver && !draw);
-        
-        if(gameOver){
-            if(humanTurn){
+
+        if (gameOver) {
+            if (humanTurn) {
                 System.out.println("The AI won!");
             } else {
                 System.out.println("You won!");
             }
-        } else if (draw){
+        } else if (draw) {
             System.out.println("The game is a draw!");
         }
     }

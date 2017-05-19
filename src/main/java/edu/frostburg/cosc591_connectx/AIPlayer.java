@@ -70,7 +70,7 @@ public class AIPlayer {
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
-                    board.move(possibleMoves.get(i), Piece.RED, true);
+                    board.move(possibleMoves.get(i), piece, true);
                     score = minimax(board, depth + 1, turn)[0];
                     score -= depth;
                     scores.add(score);
@@ -93,7 +93,11 @@ public class AIPlayer {
                 scores = new LinkedList<>();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
-                    board.move(possibleMoves.get(i), Piece.BLACK, false);
+                    if (piece == piece.RED) {
+                        board.move(possibleMoves.get(i), Piece.BLACK, false);
+                    } else {
+                        board.move(possibleMoves.get(i), Piece.RED, false);
+                    }
                     score = minimax(board, depth + 1, turn)[0];
                     score -= depth;
                     scores.add(score);
@@ -121,7 +125,7 @@ public class AIPlayer {
                 if (s < best) {
                     best = s;
                 }
-            } else if(!min){
+            } else if (!min) {
                 if (s > best) {
                     best = s;
                 }
@@ -132,20 +136,21 @@ public class AIPlayer {
 
     private int[] eval(Board board, int depth) {
         if (board.isGameOver() && !turn) {
-            return new int[] {(maxDepth + 1) - depth};
+            return new int[]{(maxDepth + 1) - depth};
         } else if (board.isGameOver() && turn) {
-            return new int[] {depth - (maxDepth + 1)};
+            return new int[]{depth - (maxDepth + 1)};
         }
-        
-        return new int[] {0, -1};
+
+        return new int[]{0, -1};
     }
 
     private int[] gameOver(Board board, boolean turn) {
         if (board.isGameOver() && !turn) {
-            return new int[] {(maxDepth + 1), -1};
-        } else if(board.isGameOver() && turn){
-            return new int[] {-(maxDepth + 1), -1};
-        } return new int[] {0, -1};
+            return new int[]{(maxDepth + 1), -1};
+        } else if (board.isGameOver() && turn) {
+            return new int[]{-(maxDepth + 1), -1};
+        }
+        return new int[]{0, -1};
     }
 
     /*
