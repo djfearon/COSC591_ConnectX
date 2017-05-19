@@ -40,7 +40,9 @@ public class AIPlayer {
     public int getMove(Board board, int depth) {
         scores = new LinkedList<>();
         turn = true;
-        return minimax(board, depth, turn)[1];
+        int move = minimax(board, depth, turn)[1];
+        System.out.println("Chosen move: " + move);
+        return move;
     }
 
     /*
@@ -53,9 +55,9 @@ public class AIPlayer {
      */
     private int[] minimax(Board board, int depth, boolean aiTurn) {
         if (board.isGameOver() || board.isDraw()) {
-            return new int[]{100, -1};
+            return gameOver(turn);
         } else if (depth == maxDepth) {
-            return new int[]{eval(board), -1};
+            return new int[]{eval(board, depth), -1};
         } else {
             int bestMove = -1;
 
@@ -63,44 +65,86 @@ public class AIPlayer {
             LinkedList<Integer> scores = new LinkedList<>();
 
             if (aiTurn) {//Look ahead to minimize the human's chances of winning
-                int bestScore = -100;
-                int score = 0;
+                int bestScore = -10;
                 turn = false;
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
+                    int score = 0;
+                    board.move(possibleMoves.get(i), Piece.RED, true);
                     score = minimax(board, depth + 1, turn)[0];
-                    scores.add(depth - score);
+                    score -= depth;
+                    scores.add(score);
+                    if (scores.size() == possibleMoves.size() && depth == 0) {
+                        System.out.println("PossibleMoves Max: " + possibleMoves);
+                        System.out.println("Max Scores: " + scores);
+                    }
                     if (score > bestScore) {
-                        bestScore = depth - score;
+                        bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
                     }
+                    board.undoMove(possibleMoves.get(i));
                 }
+                bestScore = getBestScore(scores, false);
+                bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             } else {//Look ahead to maximize the AI's chances of winning
-                int bestScore = 100;
-                int score = 0;
+                int bestScore = 10;
                 turn = true;
                 scores = new LinkedList<>();
                 for (int i = 0; i < possibleMoves.size(); i++) {
+                    int score = 0;
+                    board.move(possibleMoves.get(i), Piece.BLACK, false);
                     score = minimax(board, depth + 1, turn)[0];
-                    scores.add(depth - score);
+                    score -= depth;
+                    scores.add(score);
+                    if (scores.size() == possibleMoves.size() && depth == 0) {
+                        System.out.println("PossibleMoves Min: " + possibleMoves);
+                        System.out.println("Min Scores: " + scores);
+                    }
                     if (score < bestScore) {
-                        bestScore = depth - score;
+                        bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
                     }
+                    board.undoMove(possibleMoves.get(i));
                 }
+                bestScore = getBestScore(scores, false);
+                bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             }
         }
     }
 
-    private int eval(Board board) {
-        if (board.isGameOver() && turn) {
-            return 100;
-        } else if (!board.isGameOver() && !turn) {
-            return -100;
+    private int getBestScore(LinkedList<Integer> scores, boolean min) {
+        int best = scores.get(0);
+        for (int s : scores) {
+            if (min) {
+                if (s < best) {
+                    best = s;
+                }
+            } else if(!min){
+                if (s > best) {
+                    best = s;
+                }
+            }
+        }
+        return best;
+    }
+
+    private int eval(Board board, int depth) {
+        if (!turn) {
+            return (maxDepth + 1) - depth;
+        } else if (turn) {
+            return depth - (maxDepth + 1);
         }
         return 0;
+    }
+
+    private int[] gameOver(boolean turn) {
+        if (!turn) {
+            return new int[]{-11, -1};
+        } else {
+            return new int[]{11, -1};
+        }
     }
 
     /*

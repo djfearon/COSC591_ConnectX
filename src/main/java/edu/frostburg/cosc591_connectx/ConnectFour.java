@@ -3,7 +3,7 @@ package edu.frostburg.cosc591_connectx;
 import java.util.Scanner;
 
 public class ConnectFour {
-    
+
     private static int x;
 
     public static void main(String[] args) {
@@ -15,26 +15,25 @@ public class ConnectFour {
             x = s.nextInt();
         }
 
-        AIPlayer ai = new AIPlayer(10, Piece.RED);
+        AIPlayer ai = new AIPlayer(5, Piece.RED);
 
         Board board = new Board(x);
-        board.move(3, Piece.BLACK);
-        System.out.println(board);
-        int move = ai.getMove(boardCopy(board), 0);
-        System.out.println("AI move: " + move);
-        board.move(move, Piece.RED);
-        System.out.println(board);
-        board.move(2, Piece.BLACK);
-        System.out.println(board);
-        move = ai.getMove(boardCopy(board), 0);
-        System.out.println("AI move: " + move);
-        board.move(move, Piece.RED);
-        board.move(0, Piece.BLACK);
-        System.out.println(board);
-        move = ai.getMove(boardCopy(board), 0);
-        System.out.println("AI move: " + move);
-        board.move(move, Piece.RED);
-        System.out.println(board);
+
+        do{
+            System.out.println(board);
+            System.out.print("Enter a column: ");
+            int move = s.nextInt();
+            board.move(move, Piece.BLACK, false);
+
+            System.out.println(board);
+
+            int aiMove = -1;
+            while(aiMove == -1){
+                aiMove = ai.getMove(boardCopy(board), 0);
+            }
+            board.move(aiMove, Piece.RED, false);
+            System.out.println(board);
+        }while (!board.isGameOver() || !board.isDraw()) ;
     }
 
     private static Board boardCopy(Board board) {

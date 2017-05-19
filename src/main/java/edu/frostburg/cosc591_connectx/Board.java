@@ -1,5 +1,7 @@
 package edu.frostburg.cosc591_connectx;
 
+import java.util.LinkedList;
+
 /**
  * The game board for ConnectX
  *
@@ -50,11 +52,13 @@ public class Board {
      * @return true if a piece was inserted and false if the column is already
      * filled
      */
-    public boolean move(int column, Piece piece) {
+    public boolean move(int column, Piece piece, boolean simulated) {
         if (isValidMove(column)) {
             int row = Board.ROWS - 1 - size[column];
             board[row][column] = piece;
-            lastMove = column;
+            if (!simulated) {
+                lastMove = column;
+            }
             ++size[column];
             ++totalSize;
             return true;
@@ -81,7 +85,15 @@ public class Board {
 
         //if the last move is a winning move, the game is over
         int col = lastMove;
+        if(col == -1){
+            col = 0;
+        }
         int row = Board.ROWS - size[col];
+        if (row == 5) {
+            row = Board.ROWS - 1;
+        } else if(row == -1){
+            row = 0;
+        }
         Piece piece = board[row][col];
         return isWinningMove(col, piece);
     }
@@ -97,6 +109,7 @@ public class Board {
         int low;
         int high;
         int row = Board.ROWS - size[col];
+        if(row == 5) row -= 1;
         //Check diagonal (bottom-left to top-right)
         for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && board[row - low - 1][col - low - 1] == piece; ++low);
         for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && board[row + high + 1][col + high + 1] == piece; ++high);
@@ -177,8 +190,10 @@ public class Board {
 
     public void undoMove(int column) {
         int row = Board.ROWS - 1 - size[column];
+        if (row == -1) {
+            row = 0;
+        }
         board[row][column] = null;
-        lastMove = column;
         --size[column];
         --totalSize;
     }
