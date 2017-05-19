@@ -13,19 +13,23 @@ import java.util.LinkedList;
  */
 public class AIPlayer {
 
+    private boolean turn;
     private int maxDepth;
     private Piece piece;
+    private LinkedList<Integer> scores;
 
     /**
-     * Create a new AI Player that performs MiniMax evaluations to choose the 
+     * Create a new AI Player that performs MiniMax evaluations to choose the
      * best moves for winning a game of Connect x.
-     * 
+     *
      * @param md The maximum depth that the algorithm is allowed to look ahead.
      */
-    public AIPlayer(int md) {
+    public AIPlayer(int md, Piece p) {
         maxDepth = md;
+        turn = true;
+        scores = new LinkedList<>();
     }
-    
+
     /*
      * Perform a MiniMax evaluation to return the best move for the turn.
      * 
@@ -33,8 +37,10 @@ public class AIPlayer {
      * @param depth The current depth of evaluation.
      * @return The best possible move found.
      */
-    public int getMove(Board board, int depth){
-        return minimax(board, depth, true);
+    public int getMove(Board board, int depth) {
+        scores = new LinkedList<>();
+        turn = true;
+        return minimax(board, depth, turn)[1];
     }
 
     /*
@@ -45,101 +51,56 @@ public class AIPlayer {
      * @param aiTurn A flag for which player's turn it is.
      * @return The best possible move found.
      */
-    private int minimax(Board board, int depth, boolean aiTurn) {
-        int bestMove;
-        int bestScore = -100;
-        
-        LinkedList<Integer> possibleMoves = getLegalMoves(board);
-        LinkedList<Integer> scores = new LinkedList<>();
-        
-        if(aiTurn){//Look ahead to minimize the human's chances of winning
-            int score = min(board, depth);
-            scores.add(score);
-            bestScore = Math.max(score, bestScore);
-        } else {//Look ahead to maximize the AI's chances of winning
-            int score = max(board, depth);
-            scores.add(score);
-            bestScore = Math.min(score, bestScore);
+    private int[] minimax(Board board, int depth, boolean aiTurn) {
+        if (board.isGameOver() || board.isDraw()) {
+            return new int[]{100, -1};
+        } else if (depth == maxDepth) {
+            return new int[]{eval(board), -1};
+        } else {
+            int bestMove = -1;
+
+            LinkedList<Integer> possibleMoves = getLegalMoves(board);
+            LinkedList<Integer> scores = new LinkedList<>();
+
+            if (aiTurn) {//Look ahead to minimize the human's chances of winning
+                int bestScore = -100;
+                int score = 0;
+                turn = false;
+                scores = new LinkedList();
+                for (int i = 0; i < possibleMoves.size(); i++) {
+                    score = minimax(board, depth + 1, turn)[0];
+                    scores.add(depth - score);
+                    if (score > bestScore) {
+                        bestScore = depth - score;
+                        bestMove = possibleMoves.get(scores.indexOf(bestScore));
+                    }
+                }
+                return new int[]{bestScore, bestMove};
+            } else {//Look ahead to maximize the AI's chances of winning
+                int bestScore = 100;
+                int score = 0;
+                turn = true;
+                scores = new LinkedList<>();
+                for (int i = 0; i < possibleMoves.size(); i++) {
+                    score = minimax(board, depth + 1, turn)[0];
+                    scores.add(depth - score);
+                    if (score < bestScore) {
+                        bestScore = depth - score;
+                        bestMove = possibleMoves.get(scores.indexOf(bestScore));
+                    }
+                }
+                return new int[]{bestScore, bestMove};
+            }
         }
-        
-        //Make the best move
-        int moveIndex = scores.indexOf(bestScore);
-        bestMove = possibleMoves.get(moveIndex);
-        return bestMove;
     }
 
-    /*
-     * Perform evaluation to find the best move to minimize the player's success.
-     * 
-     * @param board The current state of the board.
-     * @param depth The current depth of evaluation.
-     * @return The best score found.
-     */
-    private int min(Board board, int depth) {
-        //if the game is over, return the ending value (positive or negative based on who won)
-        //Otherwise
-        
-        LinkedList<Integer> possibleMoves = new LinkedList<>();
-        LinkedList<Integer> scores = new LinkedList<>();
-        
-        int bestScore = -100;
-        possibleMoves = getLegalMoves(board);
-        //For each legal move in turn
-        for (int i : possibleMoves) {
-            //Make the current move
-            board.move(i, piece);
-            //Record the current score reported by min()
-            int score = 0;
-            if (depth < maxDepth) {
-                score = max(board, depth);
-                scores.add(score);
-            }
-            //if the score is greater than the best, the best is now this
-            if (score < bestScore) {
-                bestScore = score;
-            }
-            //undo the move that was made
-            undoMove(board, i);
+    private int eval(Board board) {
+        if (board.isGameOver() && turn) {
+            return 100;
+        } else if (!board.isGameOver() && !turn) {
+            return -100;
         }
-        //return the best score
-        return bestScore;
-    }
-
-    /*
-     * Perform evaluation to find the best move to maximize the AI's success.
-     * 
-     * @param board The current state of the board.
-     * @param depth The current depth of evaluation.
-     * @return The best score found.
-     */
-    private int max(Board board, int depth) {
-        //if the game is over, return the ending value (positive or negative based on who won)
-        //Otherwise
-        
-        LinkedList<Integer> possibleMoves = new LinkedList<>();
-        LinkedList<Integer> scores = new LinkedList<>();
-        
-        int bestScore = 100;
-        possibleMoves = getLegalMoves(board);
-        //For each legal move in turn
-        for (int i : possibleMoves) {
-            //Make the current move
-            board.move(i, piece);
-            //Record the current score reported by min()
-            int score = 0;
-            if (depth < maxDepth) {
-                score = min(board, depth);
-                scores.add(score);
-            }
-            //if the score is greater than the best, the best is now this
-            if (score > bestScore) {
-                bestScore = score;
-            }
-            //undo the move that was made
-            undoMove(board, i);
-        }
-        //return the best score
-        return bestScore;
+        return 0;
     }
 
     /*

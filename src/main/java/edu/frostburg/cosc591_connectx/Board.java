@@ -22,7 +22,7 @@ public class Board {
      * The number of pieces in a row required to win the game
      */
     public static int REQUIRED;
-    private Piece[][] board;
+    public Piece[][] board;
     private int[] size;
     private int totalSize;
     private int lastMove;
@@ -31,11 +31,11 @@ public class Board {
      * Create a new game board.
      */
     public Board(int x) {
-        
+
         REQUIRED = x;//Set the number of required pieces in a row
         ROWS = x + 2;//Set the number of rows
         COLUMNS = x + 3;//Set the number of columns
-                
+
         board = new Piece[ROWS][COLUMNS];
         size = new int[COLUMNS];
         totalSize = 0;
@@ -173,5 +173,13 @@ public class Board {
             builder.append("|\r\n");
         }
         return builder.toString();
+    }
+
+    public void undoMove(int column) {
+        int row = Board.ROWS - 1 - size[column];
+        board[row][column] = null;
+        lastMove = column;
+        --size[column];
+        --totalSize;
     }
 }
