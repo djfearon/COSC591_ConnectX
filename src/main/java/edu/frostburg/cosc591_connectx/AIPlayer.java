@@ -141,9 +141,9 @@ public class AIPlayer {
 
     private int[] gameOver(boolean turn) {
         if (!turn) {
-            return new int[]{-11, -1};
+            return new int[]{-(maxDepth + 1), -1};
         } else {
-            return new int[]{11, -1};
+            return new int[]{(maxDepth + 1), -1};
         }
     }
 

@@ -15,7 +15,7 @@ public class ConnectFour {
             x = s.nextInt();
         }
 
-        AIPlayer ai = new AIPlayer(5, Piece.RED);
+        AIPlayer ai = new AIPlayer(10, Piece.RED);
 
         Board board = new Board(x);
 
