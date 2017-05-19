@@ -55,9 +55,9 @@ public class AIPlayer {
      */
     private int[] minimax(Board board, int depth, boolean aiTurn) {
         if (board.isGameOver() || board.isDraw()) {
-            return gameOver(turn);
+            return gameOver(board, turn);
         } else if (depth == maxDepth) {
-            return new int[]{eval(board, depth), -1};
+            return new int[]{eval(board, depth)[0], -1};
         } else {
             int bestMove = -1;
 
@@ -130,21 +130,22 @@ public class AIPlayer {
         return best;
     }
 
-    private int eval(Board board, int depth) {
-        if (!turn) {
-            return (maxDepth + 1) - depth;
-        } else if (turn) {
-            return depth - (maxDepth + 1);
+    private int[] eval(Board board, int depth) {
+        if (board.isGameOver() && !turn) {
+            return new int[] {(maxDepth + 1) - depth};
+        } else if (board.isGameOver() && turn) {
+            return new int[] {depth - (maxDepth + 1)};
         }
-        return 0;
+        
+        return new int[] {0, -1};
     }
 
-    private int[] gameOver(boolean turn) {
-        if (!turn) {
-            return new int[]{-(maxDepth + 1), -1};
-        } else {
-            return new int[]{(maxDepth + 1), -1};
-        }
+    private int[] gameOver(Board board, boolean turn) {
+        if (board.isGameOver() && !turn) {
+            return new int[] {-(maxDepth + 1), -1};
+        } else if(board.isGameOver() && turn){
+            return new int[] {(maxDepth + 1), -1};
+        } return new int[] {0, -1};
     }
 
     /*
@@ -161,16 +162,6 @@ public class AIPlayer {
             }
         }
         return validMoves;
-    }
-
-    /*
-     * Revokes a move that was made during an evaluation state.
-     * 
-     * @param board The state of the board after evaluating a move.
-     * @param i The column on the board where the move was made.
-     */
-    private void undoMove(Board board, int i) {
-        throw new UnsupportedOperationException("This operation is not yet supported.");
     }
 
 }

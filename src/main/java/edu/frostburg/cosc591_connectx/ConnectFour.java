@@ -18,22 +18,40 @@ public class ConnectFour {
         AIPlayer ai = new AIPlayer(10, Piece.RED);
 
         Board board = new Board(x);
+        boolean gameOver = false;
+        boolean draw = false;
+        boolean humanTurn = true;
+        
+        System.out.println(board);
 
-        do{
-            System.out.println(board);
-            System.out.print("Enter a column: ");
-            int move = s.nextInt();
-            board.move(move, Piece.BLACK, false);
-
-            System.out.println(board);
-
-            int aiMove = -1;
-            while(aiMove == -1){
-                aiMove = ai.getMove(boardCopy(board), 0);
+        do {
+            if (humanTurn) {
+                System.out.print("Enter a column: ");
+                int move = s.nextInt();
+                board.move(move, Piece.BLACK, false);
+            } else {
+                int aiMove = -1;
+                while (aiMove == -1) {
+                    aiMove = ai.getMove(boardCopy(board), 0);
+                }
+                board.move(aiMove, Piece.RED, false);
             }
-            board.move(aiMove, Piece.RED, false);
+
+            gameOver = board.isGameOver();
+            draw = board.isDraw();
+            humanTurn = !humanTurn;
             System.out.println(board);
-        }while (!board.isGameOver() || !board.isDraw()) ;
+        } while (!gameOver && !draw);
+        
+        if(gameOver){
+            if(humanTurn){
+                System.out.println("The AI won!");
+            } else {
+                System.out.println("You won!");
+            }
+        } else if (draw){
+            System.out.println("The game is a draw!");
+        }
     }
 
     private static Board boardCopy(Board board) {
