@@ -29,9 +29,9 @@ public class AIPlayer {
      */
     public AIPlayer(int md, Piece p) {
         maxDepth = md;
-        turn = true;
-        piece = p;
-        opponentPiece = piece == Piece.BLACK ? Piece.RED : Piece.BLACK;
+        turn = true;//Starts with the AI's turn
+        piece = p;//Set the piece color
+        opponentPiece = piece == Piece.BLACK ? Piece.RED : Piece.BLACK;//Set the opponent's piece color
         scores = new LinkedList<>();
     }
 
@@ -71,15 +71,21 @@ public class AIPlayer {
                 int bestScore = -MAX_SCORE;
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
+
                     int score = 0;
                     int move = possibleMoves.get(i);
                     board.move(move, piece);
+                    //Run the Min function on the simulated turn
                     score = minimax(board, depth + 1, possibleMoves.get(i), false)[0];
                     scores.add(score);
+                    
+                    //If there is a higher score, store it for returning
                     if (score > bestScore) {
                         bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
                     }
+
+                    //Undo the simulated move
                     board.undoMove(possibleMoves.get(i));
                 }
                 return new int[]{bestScore, bestMove};
@@ -87,15 +93,15 @@ public class AIPlayer {
                 int bestScore = MAX_SCORE;
                 scores = new LinkedList<>();
                 for (int i = 0; i < possibleMoves.size(); i++) {
+
                     int score = 0;
                     int move = possibleMoves.get(i);
-                    if (piece == Piece.RED) {
-                        board.move(move, Piece.BLACK);
-                    } else {
-                        board.move(move, Piece.RED);
-                    }
+                    //Simulate moves that the player can make
+                    board.move(move, opponentPiece);
+                    //Take the max score of the simulated moves
                     score = minimax(board, depth + 1, possibleMoves.get(i), true)[0];
                     scores.add(score);
+                    //If there is a new lower score, store it for returning
                     if (score < bestScore) {
                         bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
@@ -107,6 +113,13 @@ public class AIPlayer {
         }
     }
 
+    /*
+     * Evaluate the state of the board and return a score for deciding the best move.
+     * 
+     * @param board The current simulated state of the board.
+     * @param depth The depth of recursion that this evaluation occurs.
+     * @return The evaluated score for decision making.
+     */
     private int[] eval(Board board, int depth) {
         if (board.isGameOver() && !turn) {
             return new int[]{MAX_SCORE - depth};
@@ -173,6 +186,16 @@ public class AIPlayer {
         return new int[]{totalScore, -1};
     }
 
+    /*
+     * Evaluate the state of the board after simulating a move.
+     *
+     * @param board The simulated state of the board without the move.
+     * @param col The column index of the simulated move.
+     * @param row The row index of the simulated move.
+     * @param deltaX The value to increment the search in the x direction.
+     * @param deltaY The value to increment the search in the y direction.
+     * @return The score for the simulated move.
+     */
     private int evaluatePosition(Board board, int col, int row, int deltaX, int deltaY) {
         int aiPieces = 0;
         int humanPieces = 0;

@@ -215,6 +215,11 @@ public class Board implements Cloneable {
         return builder.toString();
     }
 
+    /**
+     * Undo moves that have been simulated by MiniMax
+     * 
+     * @param column The column that the move was made on
+     */
     public void undoMove(int column) {
         if (size[column] == 0) {
             return;
