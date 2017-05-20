@@ -213,8 +213,6 @@ public class AIPlayer {
             return MAX_SCORE;
         } else if (humanPieces == Board.REQUIRED) {
             return -MAX_SCORE;
-//        } else if (humanPieces != 0) {
-//            return 0;
         } else {
             return aiPieces;
         }
