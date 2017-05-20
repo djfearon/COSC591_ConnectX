@@ -67,32 +67,24 @@ public class AIPlayer {
             LinkedList<Integer> possibleMoves = getLegalMoves(board);
             LinkedList<Integer> scores = new LinkedList<>();
 
-            if (turn) {//Look ahead to minimize the human's chances of winning
+            if (aiTurn) {//Look ahead to minimize the human's chances of winning
                 int bestScore = -MAX_SCORE;
-                turn = false;
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
                     int move = possibleMoves.get(i);
                     board.move(move, piece);
-                    score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
+                    score = minimax(board, depth + 1, possibleMoves.get(i), false)[0];
                     scores.add(score);
-                    if (scores.size() == possibleMoves.size() && depth == 0) {
-                        System.out.println("PossibleMoves Max: " + possibleMoves);
-                        System.out.println("Max Scores: " + scores);
-                    }
                     if (score > bestScore) {
                         bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
                     }
                     board.undoMove(possibleMoves.get(i));
                 }
-                bestScore = getBestScore(scores, true);
-                bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             } else {//Look ahead to maximize the AI's chances of winning
                 int bestScore = MAX_SCORE;
-                turn = true;
                 scores = new LinkedList<>();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
@@ -102,56 +94,24 @@ public class AIPlayer {
                     } else {
                         board.move(move, Piece.RED);
                     }
-                    score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
+                    score = minimax(board, depth + 1, possibleMoves.get(i), true)[0];
                     scores.add(score);
-                    if (scores.size() == possibleMoves.size() && depth == 0) {
-                        System.out.println("PossibleMoves Min: " + possibleMoves);
-                        System.out.println("Min Scores: " + scores);
-                    }
                     if (score < bestScore) {
                         bestScore = score;
                         bestMove = possibleMoves.get(scores.indexOf(bestScore));
                     }
                     board.undoMove(possibleMoves.get(i));
                 }
-                bestScore = getBestScore(scores, false);
-                bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             }
         }
     }
 
-    private int getBestScore(LinkedList<Integer> scores, boolean min) {
-        int best = scores.get(0);
-        int opBest = scores.get(0);
-        for (int s : scores) {
-            if (min) {
-                if (s < best) {
-                    best = s;
-                }
-                if (s > opBest) {
-                    opBest = s;
-                }
-            } else if (!min) {
-                if (s > best) {
-                    best = s;
-                }
-                if (s < opBest) {
-                    opBest = s;
-                }
-            }
-        }
-        if (Math.abs(opBest) > best || Math.abs(opBest) == best) {
-            return opBest;
-        }
-        return best;
-    }
-
     private int[] eval(Board board, int depth) {
         if (board.isGameOver() && !turn) {
-            return new int[]{MAX_SCORE + depth};
+            return new int[]{MAX_SCORE - depth};
         } else if (board.isGameOver() && turn) {
-            return new int[]{-MAX_SCORE - depth};
+            return new int[]{depth - MAX_SCORE};
         }
         int totalScore = 0;
 
@@ -160,10 +120,10 @@ public class AIPlayer {
             for (int col = 0; col < Board.COLUMNS; ++col) {
                 int score = evaluatePosition(board, col, row, 0, 1);
                 if (score == MAX_SCORE) {
-                    return new int[]{MAX_SCORE, -1};
+                    return new int[]{MAX_SCORE - depth, -1};
                 }
                 if (score == -MAX_SCORE) {
-                    return new int[]{-MAX_SCORE, -1};
+                    return new int[]{depth - MAX_SCORE, -1};
                 }
                 totalScore += score;
             }
@@ -174,10 +134,10 @@ public class AIPlayer {
             for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
                 int score = evaluatePosition(board, col, row, 1, 0);
                 if (score == MAX_SCORE) {
-                    return new int[]{MAX_SCORE, -1};
+                    return new int[]{MAX_SCORE - depth, -1};
                 }
                 if (score == -MAX_SCORE) {
-                    return new int[]{-MAX_SCORE, -1};
+                    return new int[]{depth - MAX_SCORE, -1};
                 }
                 totalScore += score;
             }
@@ -187,10 +147,10 @@ public class AIPlayer {
             for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
                 int score = evaluatePosition(board, col, row, 1, 1);
                 if (score == MAX_SCORE) {
-                    return new int[]{MAX_SCORE, -1};
+                    return new int[]{MAX_SCORE - depth, -1};
                 }
                 if (score == -MAX_SCORE) {
-                    return new int[]{-MAX_SCORE, -1};
+                    return new int[]{depth - MAX_SCORE, -1};
                 }
                 totalScore += score;
             }
@@ -201,10 +161,10 @@ public class AIPlayer {
             for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
                 int score = evaluatePosition(board, col, row, 1, -1);
                 if (score == MAX_SCORE) {
-                    return new int[]{MAX_SCORE, -1};
+                    return new int[]{MAX_SCORE - depth, -1};
                 }
                 if (score == -MAX_SCORE) {
-                    return new int[]{-MAX_SCORE, -1};
+                    return new int[]{depth - MAX_SCORE, -1};
                 }
                 totalScore += score;
             }
