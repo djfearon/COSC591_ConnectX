@@ -26,6 +26,7 @@ public class Board implements Cloneable {
     private int[] size;
     private int totalSize;
     private int lastMove;
+    private int restoreMove;
 
     /**
      * Create a new game board.
@@ -40,6 +41,7 @@ public class Board implements Cloneable {
         size = new int[COLUMNS];
         totalSize = 0;
         lastMove = -1;
+        restoreMove = -1;
     }
 
     private Board(Piece[][] board, int required, int lastMove, int totalSize, int[] size) {
@@ -60,13 +62,15 @@ public class Board implements Cloneable {
      * @return true if a piece was inserted and false if the column is already
      * filled
      */
-    public boolean move(int column, Piece piece, boolean simulated) {
+    public boolean move(int column, Piece piece) {
         if (isValidMove(column)) {
             int row = Board.ROWS - 1 - size[column];
             board[row][column] = piece;
-            if (!simulated) {
+            if(column != lastMove){
+                restoreMove = lastMove;
                 lastMove = column;
             }
+            
             ++size[column];
             ++totalSize;
             return true;
@@ -219,6 +223,8 @@ public class Board implements Cloneable {
         board[row][column] = null;
         --size[column];
         --totalSize;
+        lastMove = restoreMove;
+        restoreMove = -1;
     }
 
     /**

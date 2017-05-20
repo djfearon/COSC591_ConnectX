@@ -59,9 +59,7 @@ public class AIPlayer {
      * @return The best possible move found.
      */
     private int[] minimax(Board board, int depth, int col, boolean aiTurn) {
-        if (board.isGameOver() || board.isDraw()) {
-            return gameOver(board, turn);
-        } else if (depth == maxDepth) {
+        if (depth == maxDepth) {
             return new int[]{eval(board, depth)[0], -1};
         } else {
             int bestMove = -1;
@@ -69,14 +67,14 @@ public class AIPlayer {
             LinkedList<Integer> possibleMoves = getLegalMoves(board);
             LinkedList<Integer> scores = new LinkedList<>();
 
-            if (aiTurn) {//Look ahead to minimize the human's chances of winning
+            if (turn) {//Look ahead to minimize the human's chances of winning
                 int bestScore = -MAX_SCORE;
                 turn = false;
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
                     int move = possibleMoves.get(i);
-                    board.move(move, piece, true);
+                    board.move(move, piece);
                     score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
                     scores.add(score);
                     if (scores.size() == possibleMoves.size() && depth == 0) {
@@ -89,7 +87,7 @@ public class AIPlayer {
                     }
                     board.undoMove(possibleMoves.get(i));
                 }
-                bestScore = getBestScore(scores, false);
+                bestScore = getBestScore(scores, true);
                 bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             } else {//Look ahead to maximize the AI's chances of winning
@@ -100,9 +98,9 @@ public class AIPlayer {
                     int score = 0;
                     int move = possibleMoves.get(i);
                     if (piece == Piece.RED) {
-                        board.move(move, Piece.BLACK, true);
+                        board.move(move, Piece.BLACK);
                     } else {
-                        board.move(move, Piece.RED, true);
+                        board.move(move, Piece.RED);
                     }
                     score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
                     scores.add(score);
@@ -125,25 +123,35 @@ public class AIPlayer {
 
     private int getBestScore(LinkedList<Integer> scores, boolean min) {
         int best = scores.get(0);
+        int opBest = scores.get(0);
         for (int s : scores) {
             if (min) {
                 if (s < best) {
                     best = s;
                 }
+                if (s > opBest) {
+                    opBest = s;
+                }
             } else if (!min) {
                 if (s > best) {
                     best = s;
                 }
+                if (s < opBest) {
+                    opBest = s;
+                }
             }
+        }
+        if (Math.abs(opBest) > best || Math.abs(opBest) == best) {
+            return opBest;
         }
         return best;
     }
 
     private int[] eval(Board board, int depth) {
         if (board.isGameOver() && !turn) {
-            return new int[]{-MAX_SCORE};
+            return new int[]{MAX_SCORE + depth};
         } else if (board.isGameOver() && turn) {
-            return new int[]{MAX_SCORE};
+            return new int[]{-MAX_SCORE - depth};
         }
         int totalScore = 0;
 
@@ -227,15 +235,6 @@ public class AIPlayer {
         } else {
             return aiPieces;
         }
-    }
-
-    private int[] gameOver(Board board, boolean turn) {
-        if (board.isGameOver() && !turn) {
-            return new int[]{MAX_SCORE, -1};
-        } else if (board.isGameOver() && turn) {
-            return new int[]{-MAX_SCORE, -1};
-        }
-        return new int[]{0, -1};
     }
 
     /*

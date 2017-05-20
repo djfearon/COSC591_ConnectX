@@ -49,14 +49,14 @@ public class ConnectFour {
                     System.out.print("Enter a column: ");
                     move = s.nextInt();
                 }
-                board.move(move, playerColor, false);
+                board.move(move, playerColor);
             } else {
                 int aiMove = -1;
                 while (aiMove == -1) {
                     Board copy = board.clone();
                     aiMove = ai.getMove(copy, 0);
                 }
-                board.move(aiMove, aiColor, false);
+                board.move(aiMove, aiColor);
             }
 
             gameOver = board.isGameOver();
