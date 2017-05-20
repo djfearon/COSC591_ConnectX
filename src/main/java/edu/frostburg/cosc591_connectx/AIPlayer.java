@@ -209,9 +209,10 @@ public class AIPlayer {
         int aiPieces = 0;
         int humanPieces = 0;
         for (int i = 0; i < Board.REQUIRED; ++i) {
-            if (board.board[row][col] == piece) {
+            Piece current = board.getPiece(row, col);
+            if (current == piece) {
                 ++aiPieces;
-            } else if (board.board[row][col] == opponentPiece) {
+            } else if (current == opponentPiece) {
                 ++humanPieces;
             }
             row += deltaY;

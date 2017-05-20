@@ -53,8 +53,7 @@ public class ConnectFour {
             } else {
                 int aiMove = -1;
                 while (aiMove == -1) {
-                    Board copy = boardCopy(board);
-                    copy.setSize(board.getSize());
+                    Board copy = board.clone();
                     aiMove = ai.getMove(copy, 0);
                 }
                 board.move(aiMove, aiColor, false);
@@ -75,15 +74,5 @@ public class ConnectFour {
         } else if (draw) {
             System.out.println("The game is a draw!");
         }
-    }
-
-    private static Board boardCopy(Board board) {
-        Board p = new Board(x);
-        for (int i = 0; i < board.ROWS; i++) {
-            for (int j = 0; j < board.COLUMNS; j++) {
-                p.board[i][j] = board.board[i][j];
-            }
-        }
-        return p;
     }
 }

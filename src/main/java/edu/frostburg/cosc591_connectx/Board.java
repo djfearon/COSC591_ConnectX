@@ -1,14 +1,12 @@
 package edu.frostburg.cosc591_connectx;
 
-import java.util.LinkedList;
-
 /**
  * The game board for ConnectX
  *
  * @author Kerwin Yoder
  * @version 2017.04.29
  */
-public class Board {
+public class Board implements Cloneable {
 
     /**
      * The number of columns in the board
@@ -24,7 +22,7 @@ public class Board {
      * The number of pieces in a row required to win the game
      */
     public static int REQUIRED;
-    public Piece[][] board;
+    private Piece[][] board;
     private int[] size;
     private int totalSize;
     private int lastMove;
@@ -42,6 +40,16 @@ public class Board {
         size = new int[COLUMNS];
         totalSize = 0;
         lastMove = -1;
+    }
+
+    private Board(Piece[][] board, int required, int lastMove, int totalSize, int[] size) {
+        REQUIRED = required;//Set the number of required pieces in a row
+        ROWS = required + 2;//Set the number of rows
+        COLUMNS = required + 3;//Set the number of columns
+        this.totalSize = totalSize;
+        this.lastMove = lastMove;
+        this.board = board;
+        this.size = size;
     }
 
     /**
@@ -85,13 +93,13 @@ public class Board {
 
         //if the last move is a winning move, the game is over
         int col = lastMove;
-        if(col == -1){
+        if (col == -1) {
             col = 0;
         }
         int row = Board.ROWS - size[col];
         if (row == Board.ROWS) {
             row = Board.ROWS - 1;
-        } else if(row == -1){
+        } else if (row == -1) {
             row = 0;
         }
         Piece piece = board[row][col];
@@ -109,7 +117,9 @@ public class Board {
         int low;
         int high;
         int row = Board.ROWS - size[col];
-        if(row == Board.ROWS) row -= 1;
+        if (row == Board.ROWS) {
+            row -= 1;
+        }
         //Check diagonal (bottom-left to top-right)
         for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && board[row - low - 1][col - low - 1] == piece; ++low);
         for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && board[row + high + 1][col + high + 1] == piece; ++high);
@@ -188,7 +198,7 @@ public class Board {
             }
             builder.append("|\r\n");
         }
-        
+
         //Add column numbers to the bottom of the board
         for (int i = 0; i < COLUMNS * 2; ++i) {
             if (i % 2 == 0) {
@@ -202,18 +212,40 @@ public class Board {
     }
 
     public void undoMove(int column) {
-        if(size[column] == 0) return;
+        if (size[column] == 0) {
+            return;
+        }
         int row = Board.ROWS - size[column];
         board[row][column] = null;
         --size[column];
         --totalSize;
     }
-    
-    public void setSize(int[] size){
-        this.size = size;
+
+    /**
+     * Returns the piece at the specified row and column
+     *
+     * @param row the row of the piece
+     * @param col the column of the piece
+     * @return the piece at the specified row and column
+     */
+    public Piece getPiece(int row, int col) {
+        return board[row][col];
     }
-    
-    public int[] getSize(){
-        return this.size;
+
+    @Override
+    public Board clone() {
+        //deep copy the board
+        Piece[][] newBoard = new Piece[ROWS][COLUMNS];
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMNS; j++) {
+                newBoard[i][j] = board[i][j];
+            }
+        }
+
+        int[] newSize = new int[COLUMNS];
+        for (int i = 0; i < size.length; ++i) {
+            newSize[i] = size[i];
+        }
+        return new Board(newBoard, REQUIRED, lastMove, totalSize, newSize);
     }
 }
