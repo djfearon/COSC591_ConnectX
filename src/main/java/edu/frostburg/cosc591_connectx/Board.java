@@ -192,10 +192,8 @@ public class Board {
     }
 
     public void undoMove(int column) {
-        int row = Board.ROWS - 1 - size[column];
-        if (row == -1) {
-            row = 0;
-        }
+        if(size[column] == 0) return;
+        int row = Board.ROWS - size[column];
         board[row][column] = null;
         --size[column];
         --totalSize;
