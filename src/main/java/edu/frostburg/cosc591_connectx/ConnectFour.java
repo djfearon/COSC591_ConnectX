@@ -33,7 +33,7 @@ public class ConnectFour {
 
         System.out.println("Your piece color is " + playerColor.color);
 
-        AIPlayer ai = new AIPlayer(10, aiColor);
+        AIPlayer ai = new AIPlayer(4, aiColor);
 
         Board board = new Board(x);
         boolean gameOver = false;

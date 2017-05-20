@@ -5,9 +5,6 @@
  */
 package edu.frostburg.cosc591_connectx;
 
-import static edu.frostburg.cosc591_connectx.Board.COLUMNS;
-import static edu.frostburg.cosc591_connectx.Board.REQUIRED;
-import static edu.frostburg.cosc591_connectx.Board.ROWS;
 import java.util.LinkedList;
 
 /**
@@ -16,9 +13,11 @@ import java.util.LinkedList;
  */
 public class AIPlayer {
 
+    public static final int MAX_SCORE = 1000000;
     private boolean turn;
     private int maxDepth;
-    private Piece piece;
+    private final Piece piece;
+    private final Piece opponentPiece;
     private LinkedList<Integer> scores;
 
     /**
@@ -26,11 +25,13 @@ public class AIPlayer {
      * best moves for winning a game of Connect x.
      *
      * @param md The maximum depth that the algorithm is allowed to look ahead.
+     * @param p The piece color of the AIPlayer
      */
     public AIPlayer(int md, Piece p) {
         maxDepth = md;
         turn = true;
         piece = p;
+        opponentPiece = piece == Piece.BLACK ? Piece.RED : Piece.BLACK;
         scores = new LinkedList<>();
     }
 
@@ -61,7 +62,7 @@ public class AIPlayer {
         if (board.isGameOver() || board.isDraw()) {
             return gameOver(board, turn);
         } else if (depth == maxDepth) {
-            return new int[]{evalTest(board, depth, col)[0], -1};
+            return new int[]{eval(board, depth)[0], -1};
         } else {
             int bestMove = -1;
 
@@ -69,14 +70,14 @@ public class AIPlayer {
             LinkedList<Integer> scores = new LinkedList<>();
 
             if (aiTurn) {//Look ahead to minimize the human's chances of winning
-                int bestScore = -100;
+                int bestScore = -MAX_SCORE;
                 turn = false;
                 scores = new LinkedList();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
-                    board.move(possibleMoves.get(i), piece, true);
+                    int move = possibleMoves.get(i);
+                    board.move(move, piece, true);
                     score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
-                    score -= depth;
                     scores.add(score);
                     if (scores.size() == possibleMoves.size() && depth == 0) {
                         System.out.println("PossibleMoves Max: " + possibleMoves);
@@ -92,18 +93,18 @@ public class AIPlayer {
                 bestMove = possibleMoves.get(scores.indexOf(bestScore));
                 return new int[]{bestScore, bestMove};
             } else {//Look ahead to maximize the AI's chances of winning
-                int bestScore = 100;
+                int bestScore = MAX_SCORE;
                 turn = true;
                 scores = new LinkedList<>();
                 for (int i = 0; i < possibleMoves.size(); i++) {
                     int score = 0;
-                    if (piece == piece.RED) {
-                        board.move(possibleMoves.get(i), Piece.BLACK, true);
+                    int move = possibleMoves.get(i);
+                    if (piece == Piece.RED) {
+                        board.move(move, Piece.BLACK, true);
                     } else {
-                        board.move(possibleMoves.get(i), Piece.RED, true);
+                        board.move(move, Piece.RED, true);
                     }
                     score = minimax(board, depth + 1, possibleMoves.get(i), turn)[0];
-                    score -= depth;
                     scores.add(score);
                     if (scores.size() == possibleMoves.size() && depth == 0) {
                         System.out.println("PossibleMoves Min: " + possibleMoves);
@@ -140,97 +141,98 @@ public class AIPlayer {
 
     private int[] eval(Board board, int depth) {
         if (board.isGameOver() && !turn) {
-            return new int[]{(maxDepth + 1) - depth};
+            return new int[]{-MAX_SCORE};
         } else if (board.isGameOver() && turn) {
-            return new int[]{depth - (maxDepth + 1)};
+            return new int[]{MAX_SCORE};
         }
-        int score = 0;
-        Piece[][] b = board.board;
-        int[] count = new int[Board.REQUIRED - 1];
-        int[] size = board.getSize();
-        //iterate over columns
-        for (int col = 0; col < Board.COLUMNS; ++col) {
-            for (int row = 0; row < size[col]; ++row) {
-                Piece piece = b[col][row];
+        int totalScore = 0;
 
+        //Check vertical direction
+        for (int row = 0; row <= Board.ROWS - Board.REQUIRED; ++row) {
+            for (int col = 0; col < Board.COLUMNS; ++col) {
+                int score = evaluatePosition(board, col, row, 0, 1);
+                if (score == MAX_SCORE) {
+                    return new int[]{MAX_SCORE, -1};
+                }
+                if (score == -MAX_SCORE) {
+                    return new int[]{-MAX_SCORE, -1};
+                }
+                totalScore += score;
             }
         }
-        return new int[]{score, -1};
-    }
-    
-    private int[] evalTest(Board board, int depth, int col) {
-        if (board.isGameOver() && !turn) {
-            return new int[]{depth - 100};
-        } else if (board.isGameOver() && turn) {
-            return new int[]{100 - depth};
+
+        //Check horizontal direction
+        for (int row = 0; row < Board.ROWS; ++row) {
+            for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
+                int score = evaluatePosition(board, col, row, 1, 0);
+                if (score == MAX_SCORE) {
+                    return new int[]{MAX_SCORE, -1};
+                }
+                if (score == -MAX_SCORE) {
+                    return new int[]{-MAX_SCORE, -1};
+                }
+                totalScore += score;
+            }
         }
-        int score = 0;
-        Piece[][] b = board.board;
-        int low;
-        int high;
-        int[] size = board.getSize();
-        int row = Board.ROWS - size[col];
-        if(row == Board.ROWS) row -= 1;
+        //Check diagonal (top-left to bottom-right)
+        for (int row = 0; row <= Board.ROWS - Board.REQUIRED; ++row) {
+            for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
+                int score = evaluatePosition(board, col, row, 1, 1);
+                if (score == MAX_SCORE) {
+                    return new int[]{MAX_SCORE, -1};
+                }
+                if (score == -MAX_SCORE) {
+                    return new int[]{-MAX_SCORE, -1};
+                }
+                totalScore += score;
+            }
+        }
+
         //Check diagonal (bottom-left to top-right)
-        for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && b[row - low - 1][col - low - 1] == piece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && b[row + high + 1][col + high + 1] == piece; ++high);
-        score += Math.abs(high - low) + 1;
-
-        //Check diagonal (top-left to bottom-right)
-        for (low = 0; col - low - 1 >= 0 && row + low + 1 < ROWS && b[row + low + 1][col - low - 1] == piece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row - high - 1 >= 0 && b[row - high - 1][col + high + 1] == piece; ++high);
-        score += Math.abs(high - low) + 1 ;
-
-        //Check horizontal direction
-        for (low = col; low > 0 && b[row][low - 1] == piece; --low);
-        for (high = col; high < COLUMNS - 1 && b[row][high + 1] == piece; ++high);
-        score += Math.abs(high - low) + 1;
-
-        //Check vertical direction        
-        for (high = row; high < ROWS - 1 && b[high + 1][col] == piece; ++high);
-        score += Math.abs(high - row) + 1;
-        
-        
-        Piece tempPiece = null;
-        if(piece == Piece.RED){
-            tempPiece = Piece.BLACK;
-        } else {
-            tempPiece = Piece.RED;
+        for (int row = Board.REQUIRED - 1; row < Board.ROWS; ++row) {
+            for (int col = 0; col <= Board.COLUMNS - Board.REQUIRED; ++col) {
+                int score = evaluatePosition(board, col, row, 1, -1);
+                if (score == MAX_SCORE) {
+                    return new int[]{MAX_SCORE, -1};
+                }
+                if (score == -MAX_SCORE) {
+                    return new int[]{-MAX_SCORE, -1};
+                }
+                totalScore += score;
+            }
         }
-        
-        for (low = 0; col - low - 1 >= 0 && row - low - 1 >= 0 && b[row - low - 1][col - low - 1] == tempPiece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row + high + 1 < ROWS && b[row + high + 1][col + high + 1] == tempPiece; ++high);
-        score += Math.abs(high - low) + 1 + (REQUIRED - Math.abs(high - low));
 
-        //Check diagonal (top-left to bottom-right)
-        for (low = 0; col - low - 1 >= 0 && row + low + 1 < ROWS && b[row + low + 1][col - low - 1] == tempPiece; ++low);
-        for (high = 0; col + high + 1 < COLUMNS && row - high - 1 >= 0 && b[row - high - 1][col + high + 1] == tempPiece; ++high);
-        score += Math.abs(high - low) + 1 + (REQUIRED - Math.abs(high - low));
-
-        //Check horizontal direction
-        for (low = col; low > 0 && b[row][low - 1] ==tempPiece; --low);
-        for (high = col; high < COLUMNS - 1 && b[row][high + 1] == tempPiece; ++high);
-        score += Math.abs(high - low) + 1 + (REQUIRED - Math.abs(high - low));
-
-        //Check vertical direction        
-        for (high = row; high < ROWS - 1 && b[high + 1][col] == tempPiece; ++high);
-        score += Math.abs(high - low) + 1 + (REQUIRED - Math.abs(high - low)); 
-        return new int[]{score, -1};
+        return new int[]{totalScore, -1};
     }
-    
-//    private int getScore(int number) {
-//        switch(number) {
-//            case 1:
-//                return ;
-//            case 2:
-//        }
-//    }
+
+    private int evaluatePosition(Board board, int col, int row, int deltaX, int deltaY) {
+        int aiPieces = 0;
+        int humanPieces = 0;
+        for (int i = 0; i < Board.REQUIRED; ++i) {
+            if (board.board[row][col] == piece) {
+                ++aiPieces;
+            } else if (board.board[row][col] == opponentPiece) {
+                ++humanPieces;
+            }
+            row += deltaY;
+            col += deltaX;
+        }
+        if (aiPieces == Board.REQUIRED) {
+            return MAX_SCORE;
+        } else if (humanPieces == Board.REQUIRED) {
+            return -MAX_SCORE;
+//        } else if (humanPieces != 0) {
+//            return 0;
+        } else {
+            return aiPieces;
+        }
+    }
 
     private int[] gameOver(Board board, boolean turn) {
         if (board.isGameOver() && !turn) {
-            return new int[]{100, -1};
+            return new int[]{MAX_SCORE, -1};
         } else if (board.isGameOver() && turn) {
-            return new int[]{-100, -1};
+            return new int[]{-MAX_SCORE, -1};
         }
         return new int[]{0, -1};
     }
