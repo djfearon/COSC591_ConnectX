@@ -188,6 +188,16 @@ public class Board {
             }
             builder.append("|\r\n");
         }
+        
+        //Add column numbers to the bottom of the board
+        for (int i = 0; i < COLUMNS * 2; ++i) {
+            if (i % 2 == 0) {
+                builder.append(" ");
+            } else {
+                builder.append(i / 2);
+
+            }
+        }
         return builder.toString();
     }
 
